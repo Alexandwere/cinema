@@ -1,0 +1,37 @@
+package com.javaacademy.cinema.repository;
+
+import com.javaacademy.cinema.entity.Place;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import java.sql.ResultSet;
+import java.util.Optional;
+
+@Slf4j
+@Repository
+@RequiredArgsConstructor
+public class PlaceRepository {
+    private final JdbcTemplate jdbcTemplate;
+
+    public Optional<Place> selectById(Integer id) {
+        String sqlQuery = """
+                select *
+                from place
+                where id = ?
+                """;
+        Optional<Place> result = Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, this::mapToPlace, id));
+        log.info("Выполнен SQL запрос: {}, по id = {}, результат: {}", sqlQuery, id, result);
+        return result;
+    }
+
+    @SneakyThrows
+    private Place mapToPlace(ResultSet rs, int rowNum) {
+        Place place = new Place();
+        place.setId(rs.getInt("id"));
+        place.setNumber(rs.getString("number"));
+        return place;
+    }
+}
