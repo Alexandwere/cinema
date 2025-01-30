@@ -17,13 +17,13 @@ public class PlaceRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public Optional<Place> selectById(Integer id) {
-        String sqlQuery = """
+        String sql = """
                 select *
                 from place
                 where id = ?
                 """;
-        Optional<Place> result = Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, this::mapToPlace, id));
-        log.info("Выполнен SQL запрос: {}, по id = {}, результат: {}", sqlQuery, id, result);
+        Optional<Place> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToPlace, id));
+        log.info("Выполнен SQL запрос: {}, по id = {}, результат: {}", sql, id, result);
         return result;
     }
 

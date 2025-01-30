@@ -1,6 +1,9 @@
 package com.javaacademy.cinema.repository;
 
+import com.javaacademy.cinema.entity.Session;
 import com.javaacademy.cinema.entity.Ticket;
+import com.javaacademy.cinema.exception.AlreadyBoughtTicketException;
+import com.javaacademy.cinema.exception.NotFoundTicketException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -18,14 +22,57 @@ public class TicketRepository {
     private final SessionRepository sessionRepository;
     private final PlaceRepository placeRepository;
 
+    public Ticket save(Ticket ticket) {
+        Integer placeId = ticket.getPlace().getId();
+        Integer sessionId = ticket.getSession().getId();
+        Boolean isBuy = ticket.getIsBuy();
+
+        String sql = """
+                insert into ticket (place_id, session_id, is_buy)
+                value (?, ?, ?)
+                returning id;
+                """;
+        Integer id = jdbcTemplate.queryForObject(sql, Integer.class, placeId, sessionId, isBuy);
+        log.info("Выполнен SQL запрос на сохранение билета: {}\nsession_id = {}, place_id = {}, is_buy = {}",
+                sql, sessionId, placeId, isBuy);
+        ticket.setId(id);
+        return ticket;
+    }
+
+    public void buy(Integer id) {
+        String sql = """
+                update ticket
+                set is_buy = true
+                where id = ?;
+                """;
+        Optional<Ticket> currentTicket = selectById(id);
+        if (currentTicket.isEmpty()) {
+            throw new NotFoundTicketException("Билет не найден.");
+        }
+        if (currentTicket.get().getIsBuy()) {
+            throw new AlreadyBoughtTicketException("Билет уже куплен.");
+        }
+        jdbcTemplate.update(sql, id);
+        log.info("Выполнен SQL запрос на обновление статуса билета на \"куплен\": {}", sql);
+    }
+
+    public List<Ticket> selectAllBuyTicket(Session session) {
+        return findTargetList(session, true);
+    }
+
+    public List<Ticket> selectAllNotBuyTicket(Session session) {
+        return findTargetList(session, false);
+    }
+
     public Optional<Ticket> selectById(Integer id) {
-        String sqlQuery = """
+        String sql = """
                 select *
                 from ticket
                 where id = ?
                 """;
-        log.info("Выполнен SQL запрос: поиск по ID");
-        return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, this::mapToTicket, id));
+        Optional<Ticket> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToTicket, id));
+        log.info("Выполнен SQL запрос поиска по ID: {}", sql);
+        return result;
     }
 
     @SneakyThrows
@@ -36,5 +83,17 @@ public class TicketRepository {
         ticket.setSession(sessionRepository.selectById(rs.getInt("session_id")).get());
         ticket.setPlace(placeRepository.selectById(rs.getInt("place_id")).get());
         return ticket;
+    }
+
+    private List<Ticket> findTargetList(Session session, Boolean isBuy) {
+        String sql = """
+                select *
+                from ticket
+                where is_buy = ? and session_id = ?;
+                """;
+        Integer session_id = session.getId();
+        List<Ticket> result = jdbcTemplate.query(sql, this::mapToTicket, isBuy,session_id);
+        log.info("Выполнен SQl запрос на получение купленных/проданных билетов");
+        return result;
     }
 }
