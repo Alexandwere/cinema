@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -25,6 +26,14 @@ public class PlaceRepository {
         Optional<Place> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToPlace, id));
         log.info("Выполнен SQL запрос: {}, по id = {}, результат: {}", sql, id, result);
         return result;
+    }
+
+    public List<Place> selectAll() {
+        String sql = """
+                select *
+                from place;
+                """;
+        return jdbcTemplate.query(sql, this::mapToPlace);
     }
 
     @SneakyThrows

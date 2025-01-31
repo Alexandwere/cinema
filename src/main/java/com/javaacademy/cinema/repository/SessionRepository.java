@@ -62,7 +62,7 @@ public class SessionRepository {
     private Session mapToSession(ResultSet rs, int rowNum) {
         Session session = new Session();
         session.setId(rs.getInt("id"));
-        session.setLocalDateTime(rs.getDate("date_and_time").toLocalDate().atTime(24, 60));
+        session.setLocalDateTime(rs.getTimestamp("date_and_time").toLocalDateTime());
        // Возможно здесь Optional не надо
         Optional<Movie> movie = movieRepository.selectMovieById(rs.getInt("movie_id"));
         movie.ifPresent(session::setMovie);

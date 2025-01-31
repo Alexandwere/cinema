@@ -1,6 +1,5 @@
 package com.javaacademy.cinema.repository;
 
-import com.javaacademy.cinema.entity.Session;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.exception.AlreadyBoughtTicketException;
 import com.javaacademy.cinema.exception.NotFoundTicketException;
@@ -56,12 +55,12 @@ public class TicketRepository {
         log.info("Выполнен SQL запрос на обновление статуса билета на \"куплен\": {}", sql);
     }
 
-    public List<Ticket> selectAllBuyTicket(Session session) {
-        return findTargetList(session, true);
+    public List<Ticket> selectBuyTickets(Integer id) {
+        return findTargetList(id, true);
     }
 
-    public List<Ticket> selectAllNotBuyTicket(Session session) {
-        return findTargetList(session, false);
+    public List<Ticket> selectNotBuyTickets(Integer id) {
+        return findTargetList(id, false);
     }
 
     public Optional<Ticket> selectById(Integer id) {
@@ -85,14 +84,13 @@ public class TicketRepository {
         return ticket;
     }
 
-    private List<Ticket> findTargetList(Session session, Boolean isBuy) {
+    private List<Ticket> findTargetList(Integer sessionId, Boolean isBuy) {
         String sql = """
                 select *
                 from ticket
                 where is_buy = ? and session_id = ?;
                 """;
-        Integer session_id = session.getId();
-        List<Ticket> result = jdbcTemplate.query(sql, this::mapToTicket, isBuy,session_id);
+        List<Ticket> result = jdbcTemplate.query(sql, this::mapToTicket, isBuy, sessionId);
         log.info("Выполнен SQl запрос на получение купленных/проданных билетов");
         return result;
     }
