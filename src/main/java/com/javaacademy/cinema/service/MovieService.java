@@ -28,6 +28,9 @@ public class MovieService {
 //        Добавить проверку на существование фильма
     }
 
+    /**
+     Показать все фильмы
+     */
     public List<MovieResponse> findAll() {
         List<Movie> movies = movieRepository.selectAll();
         log.info("Получены все фильмы.\n");

@@ -42,6 +42,9 @@ public class SessionService {
         log.info("Созданы не купленные билеты на сеанс {}.\n", session.getId());
     }
 
+    /**
+     Показать все сеансы
+     */
     public List<SessionResponse> findAll() {
         List<Session> sessions = sessionRepository.findAll();
         List<SessionResponse> sessionResponses = sessionResponseMapper.toSessions(sessions);

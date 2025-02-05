@@ -1,5 +1,6 @@
 package com.javaacademy.cinema.controller;
 
+import com.javaacademy.cinema.dto.BookingDto;
 import com.javaacademy.cinema.dto.MovieResponse;
 import com.javaacademy.cinema.dto.SessionResponse;
 import com.javaacademy.cinema.service.MovieService;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -37,7 +39,8 @@ public class CinemaController {
         return ticketService.findFreePlaces(id);
     }
 
-    public void buyTicket(@RequestBody ) {
+    @PostMapping("/ticket/booking")
+    public void buyTicket(@RequestBody BookingDto bookingDto) {
 
     }
 }

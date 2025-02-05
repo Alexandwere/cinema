@@ -74,6 +74,17 @@ public class TicketRepository {
         return result;
     }
 
+    public Optional<Ticket> selectByNumber(String number) {
+        String sql = """
+                select *
+                from ticket
+                where number = ?
+                """;
+        Optional<Ticket> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToTicket, number));
+        log.info("Выполнен SQL запрос поиска по номеру: {}", sql);
+        return result;
+    }
+
     @SneakyThrows
     private Ticket mapToTicket(ResultSet rs, int rowNum) {
         Ticket ticket = new Ticket();
