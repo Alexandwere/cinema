@@ -5,6 +5,8 @@ import com.javaacademy.cinema.entity.Session;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 
+import java.util.List;
+
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface SessionMapper {
     Session toEntity(SessionDto sessionDto);

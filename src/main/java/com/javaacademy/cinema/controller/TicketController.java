@@ -15,7 +15,7 @@ import java.util.List;
 @RequestMapping("cinema/api/ticket")
 public class TicketController {
     private final TicketService ticketService;
-
+//АДМИН
     @GetMapping("/saled/{id}")
     public List<TicketDto> findBuyTickets(@PathVariable Integer id) {
         return ticketService.findAllBuyTicket(id);
