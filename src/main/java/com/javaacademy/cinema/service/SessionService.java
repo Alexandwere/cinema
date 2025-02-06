@@ -6,7 +6,6 @@ import com.javaacademy.cinema.entity.Place;
 import com.javaacademy.cinema.entity.Session;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.mapper.SessionMapper;
-import com.javaacademy.cinema.mapper.SessionResponseMapper;
 import com.javaacademy.cinema.repository.PlaceRepository;
 import com.javaacademy.cinema.repository.SessionRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ public class SessionService {
     private final SessionRepository sessionRepository;
     private final PlaceRepository placeRepository;
     private final SessionMapper sessionMapper;
-    private final SessionResponseMapper sessionResponseMapper;
 
     /**
      Создание сеанса
@@ -47,7 +45,7 @@ public class SessionService {
      */
     public List<SessionResponse> findAll() {
         List<Session> sessions = sessionRepository.findAll();
-        List<SessionResponse> sessionResponses = sessionResponseMapper.toSessions(sessions);
+        List<SessionResponse> sessionResponses = sessionMapper.toSessions(sessions);
         log.info("Получен список сеансов\n");
         return sessionResponses;
     }

@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.javaacademy</groupId>
 	<artifactId>cinema</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>cinema</name>
 
 	<properties>
@@ -85,6 +85,7 @@
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>

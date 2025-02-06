@@ -1,7 +1,6 @@
 package com.javaacademy.cinema.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.javaacademy.cinema.entity.Movie;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
