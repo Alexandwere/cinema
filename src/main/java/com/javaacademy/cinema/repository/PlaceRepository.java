@@ -1,9 +1,11 @@
 package com.javaacademy.cinema.repository;
 
+import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.entity.Place;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -23,9 +25,13 @@ public class PlaceRepository {
                 from place
                 where id = ?
                 """;
-        Optional<Place> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToPlace, id));
-        log.info("Выполнен SQL запрос: {}, по id = {}, результат: {}", sql, id, result);
-        return result;
+        try {
+            Optional<Place> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToPlace, id));
+            log.info("Выполнен SQL запрос: {}, по id = {}, результат: {}", sql, id, result);
+            return result;
+        } catch (EmptyResultDataAccessException e) {
+            return (Optional.empty());
+        }
     }
 
     public List<Place> selectAll() {

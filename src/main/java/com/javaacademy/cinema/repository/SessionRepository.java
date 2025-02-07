@@ -1,12 +1,14 @@
 package com.javaacademy.cinema.repository;
 
 import com.javaacademy.cinema.entity.Movie;
+import com.javaacademy.cinema.entity.Place;
 import com.javaacademy.cinema.entity.Session;
 import com.javaacademy.cinema.exception.AlreadyExistsSessionException;
 import com.javaacademy.cinema.exception.NotFoundSessionException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -53,11 +55,15 @@ public class SessionRepository {
         String sql = """
                 select *
                 from Session
-                where id = ?
+                where id = ?;
                 """;
-        Optional<Session> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToSession, id));
-        log.info("Выполнен SQL запрос: {}, по id = {}, результат: {}", sql, id, result);
-        return result;
+        try {
+            Optional<Session> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToSession, id));
+            log.info("Выполнен SQL запрос: {}, по id = {}, результат: {}", sql, id, result);
+            return result;
+        } catch (EmptyResultDataAccessException e) {
+            return (Optional.empty());
+        }
     }
 
     @SneakyThrows
@@ -80,8 +86,13 @@ public class SessionRepository {
                 from Session
                 where date_and_time = ? and price = ? and movie_id = ?;
                 """;
-        Optional<Session> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToSession,
-                dateTime, price, movieId));
+        Optional<Session> result;
+        try {
+            result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToSession,
+                    dateTime, price, movieId));
+        } catch (EmptyResultDataAccessException e) {
+            result = Optional.empty();
+        }
         if (result.isPresent()) {
             throw new AlreadyExistsSessionException("Сеанс уже существует");
         }

@@ -5,6 +5,7 @@ import com.javaacademy.cinema.exception.AlreadyExistsFilmException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -37,11 +38,15 @@ public class MovieRepository {
         String sql = """
         select *
         from movie
-        where id = ?
+        where id = ?;
         """;
-        Optional<Movie> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToMovie, id));
-        log.info("Выполнен SQL запрос: {}, по id = {}, результат: {}", sql, id, result);
-        return result;
+        try {
+            Optional<Movie> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToMovie, id));
+            log.info("Выполнен SQL запрос: {}, по id = {}, результат: {}", sql, id, result);
+            return result;
+        } catch (EmptyResultDataAccessException e) {
+            return (Optional.empty());
+        }
     }
 
     public List<Movie> selectAll() {
@@ -66,12 +71,14 @@ public class MovieRepository {
         String sql = """
         select *
         from movie
-        where name = ?
+        where title = ?;
         """;
-        Optional<Movie> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToMovie, title));
-        log.info("Выполнен SQL запрос проверки наличия фильма \"{}\" в БД", title);
-        if (result.isPresent()) {
+        try {
+            Optional<Movie> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToMovie, title));
+        } catch (EmptyResultDataAccessException e) {
             throw new AlreadyExistsFilmException("Фильм уже существует.");
         }
+
+        log.info("Выполнен SQL запрос проверки наличия фильма \"{}\" в БД", title);
     }
 }

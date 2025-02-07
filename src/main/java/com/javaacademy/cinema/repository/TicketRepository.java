@@ -1,11 +1,13 @@
 package com.javaacademy.cinema.repository;
 
+import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.exception.AlreadyBoughtTicketException;
 import com.javaacademy.cinema.exception.NotFoundTicketException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -71,9 +73,13 @@ public class TicketRepository {
                 from ticket
                 where id = ?
                 """;
-        Optional<Ticket> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToTicket, id));
-        log.info("Выполнен SQL запрос поиска по ID: {}", sql);
-        return result;
+        try {
+            Optional<Ticket> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToTicket, id));
+            log.info("Выполнен SQL запрос поиска по ID: {}", sql);
+            return result;
+        } catch (EmptyResultDataAccessException e) {
+            return (Optional.empty());
+        }
     }
 
     public Optional<Ticket> selectByNumber(String number) {

@@ -28,7 +28,7 @@ public class TicketService {
      Покупка билета
      */
     public TicketResponse buyTicket(BookingDto bookingDto) {
-//        добавить проверку на существование сеанса
+        sessionRepository.checkPresenceSession(bookingDto.getSessionId());
         Session session = sessionRepository.selectById(bookingDto.getSessionId()).get();
         Place place = ticketRepository.selectByNumber(bookingDto.getPlaceNumber()).get().getPlace();
         Ticket ticket = Ticket.builder()
