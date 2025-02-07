@@ -21,11 +21,10 @@ public class MovieService {
     /**
      Сохранение фильма
      */
-    public MovieDto saveMovie(MovieDto movieDto) {
-        Movie movie = movieRepository.save(movieMapper.toEntity(movieDto));
+    public MovieDto saveMovie(MovieResponse movieResponse) {
+        Movie movie = movieRepository.save(movieMapper.toEntity(movieResponse));
         log.info("Сохранен фильм в БД.\n");
         return movieMapper.toDto(movie);
-//        Добавить проверку на существование фильма
     }
 
     /**

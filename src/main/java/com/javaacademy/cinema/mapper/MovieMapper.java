@@ -10,9 +10,8 @@ import java.util.List;
 @Component
 public class MovieMapper {
 
-    public Movie toEntity(MovieDto movieDto) {
+    public Movie toEntity(MovieResponse movieDto) {
         Movie movie = new Movie();
-        movie.setId(movieDto.getId());
         movie.setTitle(movieDto.getTitle());
         movie.setDescription(movieDto.getDescription());
         return movie;

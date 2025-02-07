@@ -1,6 +1,7 @@
 package com.javaacademy.cinema.repository;
 
 import com.javaacademy.cinema.entity.Movie;
+import com.javaacademy.cinema.exception.AlreadyExistsFilmException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +19,12 @@ public class MovieRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public Movie save(Movie movie) {
+        checkPresenceMovie(movie);
         String title = movie.getTitle();
         String description = movie.getDescription();
         String sql = """
-                insert into movie (name, description)
-                value (?, ?)
+                insert into movie (title, description)
+                values (?, ?)
                 returning id;
                 """;
         Integer id = jdbcTemplate.queryForObject(sql, Integer.class, title, description);
@@ -57,5 +59,19 @@ public class MovieRepository {
         movie.setTitle(rs.getString("title"));
         movie.setDescription(rs.getString("description"));
         return movie;
+    }
+
+    private void checkPresenceMovie(Movie movie) {
+        String title = movie.getTitle();
+        String sql = """
+        select *
+        from movie
+        where name = ?
+        """;
+        Optional<Movie> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToMovie, title));
+        log.info("Выполнен SQL запрос проверки наличия фильма \"{}\" в БД", title);
+        if (result.isPresent()) {
+            throw new AlreadyExistsFilmException("Фильм уже существует.");
+        }
     }
 }

@@ -1,7 +1,9 @@
 package com.javaacademy.cinema.repository;
 
+import com.javaacademy.cinema.entity.Session;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.exception.AlreadyBoughtTicketException;
+import com.javaacademy.cinema.exception.NotFoundSessionException;
 import com.javaacademy.cinema.exception.NotFoundTicketException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -56,10 +58,12 @@ public class TicketRepository {
     }
 
     public List<Ticket> selectBuyTickets(Integer id) {
+        sessionRepository.checkPresenceSession(id);
         return findTargetList(id, true);
     }
 
     public List<Ticket> selectNotBuyTickets(Integer id) {
+        sessionRepository.checkPresenceSession(id);
         return findTargetList(id, false);
     }
 
@@ -105,4 +109,5 @@ public class TicketRepository {
         log.info("Выполнен SQl запрос на получение купленных/проданных билетов");
         return result;
     }
+
 }

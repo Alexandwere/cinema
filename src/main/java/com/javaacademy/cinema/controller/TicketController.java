@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,18 +15,21 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("cinema/api/ticket")
+@RequestMapping("cinema/ticket")
 @Tag(
         name = "Контроллер для работы с билетами",
         description = "Содержит команды для совершения действий с билетами"
 )
 public class TicketController {
     private final TicketService ticketService;
-//АДМИН
+    private final Validator validator;
+
     @Operation(summary = "Получение списка купленных билетов",
         description = "Получение списка купленных билетов по номеру сеанса")
     @GetMapping("/saled/{id}")
-    public List<TicketDto> findBuyTickets(@PathVariable Integer id) {
+    public List<TicketDto> findBuyTickets(@RequestHeader("User-token") String password,
+                                          @PathVariable Integer id) {
+        validator.checkAdmin(password);
         return ticketService.findAllBuyTicket(id);
     }
 }
