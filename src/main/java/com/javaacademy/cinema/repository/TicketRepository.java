@@ -1,9 +1,7 @@
 package com.javaacademy.cinema.repository;
 
-import com.javaacademy.cinema.entity.Session;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.exception.AlreadyBoughtTicketException;
-import com.javaacademy.cinema.exception.NotFoundSessionException;
 import com.javaacademy.cinema.exception.NotFoundTicketException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
