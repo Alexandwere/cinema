@@ -33,9 +33,10 @@ public class MovieController {
             @ApiResponse(responseCode = "403", description = "Доступ запрещен.")
     })
     @PostMapping
-    public MovieDto saveMovie(@RequestHeader("User-token") String password,
+    public MovieDto saveMovie(@RequestHeader("token") String token,
+                              @RequestHeader("password") String password,
                               @RequestBody MovieResponse movieResponse) {
-        validator.checkAdmin(password);
+        validator.checkAdmin(token, password);
         return movieService.saveMovie(movieResponse);
     }
 }

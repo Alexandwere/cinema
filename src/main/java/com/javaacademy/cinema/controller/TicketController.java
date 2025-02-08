@@ -33,9 +33,10 @@ public class TicketController {
             @ApiResponse(responseCode = "400", description = "Сеанса не существует.")
     })
     @GetMapping("/saled/{id}")
-    public List<TicketDto> findBuyTickets(@RequestHeader("User-token") String password,
+    public List<TicketDto> findBuyTickets(@RequestHeader("token") String token,
+                                          @RequestHeader("password") String password,
                                           @PathVariable Integer id) {
-        validator.checkAdmin(password);
+        validator.checkAdmin(token, password);
         return ticketService.findAllBuyTicket(id);
     }
 }

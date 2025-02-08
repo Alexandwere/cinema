@@ -35,9 +35,10 @@ public class SessionController {
             @ApiResponse(responseCode = "403", description = "Доступ запрещен.")
     })
     @PostMapping
-    public List<Ticket> saveSession(@RequestHeader("User-token") String password,
+    public List<Ticket> saveSession(@RequestHeader("token") String token,
+                                    @RequestHeader("password") String password,
                                     @RequestBody SessionCreateDto sessionDto) {
-        validator.checkAdmin(password);
+        validator.checkAdmin(token, password);
         return sessionService.saveSession(sessionDto);
     }
 }

@@ -8,5 +8,5 @@ spring:
     driver: org.postgresql.Driver
 app:
   site-api: https://localhost:8081/cinema/api
-  header-key: user_token
-  header-value: secretadmin123
+  admin_token: user-token
+  admin_password: secretadmin123
