@@ -1,6 +1,6 @@
 package com.javaacademy.cinema.service;
 
-import com.javaacademy.cinema.dto.CreateSessionDto;
+import com.javaacademy.cinema.dto.SessionCreateDto;
 import com.javaacademy.cinema.dto.SessionResponse;
 import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.entity.Place;
@@ -30,7 +30,7 @@ public class SessionService {
     /**
      Создание сеанса
      */
-    public List<Ticket> saveSession(CreateSessionDto sessionDto) {
+    public List<Ticket> saveSession(SessionCreateDto sessionDto) {
         Optional<Movie> movie = movieRepository.selectMovieById(sessionDto.getMovieId());
         if (movie.isEmpty()) {
             throw new NotFoundMovieException("Фильм с таким ID не существует.");

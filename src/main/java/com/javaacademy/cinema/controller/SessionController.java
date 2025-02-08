@@ -1,6 +1,6 @@
 package com.javaacademy.cinema.controller;
 
-import com.javaacademy.cinema.dto.CreateSessionDto;
+import com.javaacademy.cinema.dto.SessionCreateDto;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.service.SessionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +29,7 @@ public class SessionController {
         description = "Создание сеанса с его номером, временем, фильмом и ценой")
     @PostMapping
     public List<Ticket> saveSession(@RequestHeader("User-token") String password,
-                                    @RequestBody CreateSessionDto sessionDto) {
+                                    @RequestBody SessionCreateDto sessionDto) {
         validator.checkAdmin(password);
         return sessionService.saveSession(sessionDto);
     }

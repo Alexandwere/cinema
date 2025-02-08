@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateSessionDto {
+public class SessionCreateDto {
     @JsonProperty("date_and_time")
     private LocalDateTime localDateTime;
     private BigDecimal price;
