@@ -4,6 +4,8 @@ import com.javaacademy.cinema.dto.SessionCreateDto;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.service.SessionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +29,11 @@ public class SessionController {
 
     @Operation(summary = "Создание сеанса",
         description = "Создание сеанса с его номером, временем, фильмом и ценой")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Успешное создание сеанса."),
+            @ApiResponse(responseCode = "400", description = "Фильм не существует."),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен.")
+    })
     @PostMapping
     public List<Ticket> saveSession(@RequestHeader("User-token") String password,
                                     @RequestBody SessionCreateDto sessionDto) {

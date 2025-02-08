@@ -39,7 +39,7 @@ public class SessionService {
         log.info("Создан сеанс № {}.\n", session.getId());
         List<Place> allPlace = placeRepository.selectAll();
         List<Ticket> allTicket = allPlace.stream()
-                .map(e-> Ticket.builder()
+                .map(e -> Ticket.builder()
                     .place(e)
                     .isBuy(false)
                     .session(session)

@@ -3,6 +3,8 @@ package com.javaacademy.cinema.controller;
 import com.javaacademy.cinema.dto.TicketDto;
 import com.javaacademy.cinema.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +28,10 @@ public class TicketController {
 
     @Operation(summary = "Получение списка купленных билетов",
         description = "Получение списка купленных билетов по номеру сеанса")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Успешное получение списка купленных билетов на сеанс."),
+            @ApiResponse(responseCode = "400", description = "Сеанса не существует.")
+    })
     @GetMapping("/saled/{id}")
     public List<TicketDto> findBuyTickets(@RequestHeader("User-token") String password,
                                           @PathVariable Integer id) {

@@ -5,6 +5,7 @@ import com.javaacademy.cinema.exception.AlreadyExistsFilmException;
 import com.javaacademy.cinema.exception.AlreadyExistsSessionException;
 import com.javaacademy.cinema.exception.InvalidPassword;
 import com.javaacademy.cinema.exception.NotFoundMovieException;
+import com.javaacademy.cinema.exception.NotFoundPlaceException;
 import com.javaacademy.cinema.exception.NotFoundSessionException;
 import com.javaacademy.cinema.exception.NotFoundTicketException;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             NotFoundMovieException.class,
             NotFoundSessionException.class,
-            NotFoundTicketException.class
+            NotFoundTicketException.class,
+            NotFoundPlaceException.class
     })
     public ResponseEntity<?> handle400Exception(RuntimeException e) {
         log.warn(e.getMessage(), e);

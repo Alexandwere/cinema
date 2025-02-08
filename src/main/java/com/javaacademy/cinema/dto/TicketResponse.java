@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class TicketResponse {
     @JsonProperty("ticket_id")
-    private Integer Id;
+    private Integer id;
     @JsonProperty("place_name")
     private String placeNumber;
     @JsonProperty("movie_name")

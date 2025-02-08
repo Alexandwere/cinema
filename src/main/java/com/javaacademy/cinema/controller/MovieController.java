@@ -4,6 +4,8 @@ import com.javaacademy.cinema.dto.MovieDto;
 import com.javaacademy.cinema.dto.MovieResponse;
 import com.javaacademy.cinema.service.MovieService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +27,11 @@ public class MovieController {
 
     @Operation(summary = "Сохранение фильма",
         description = "Сохранения фильма с названием и описанием.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Успешное сохранение фильма."),
+            @ApiResponse(responseCode = "400", description = "Фильм уже существует."),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен.")
+    })
     @PostMapping
     public MovieDto saveMovie(@RequestHeader("User-token") String password,
                               @RequestBody MovieResponse movieResponse) {

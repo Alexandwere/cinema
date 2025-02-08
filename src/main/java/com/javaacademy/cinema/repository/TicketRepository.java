@@ -1,8 +1,8 @@
 package com.javaacademy.cinema.repository;
 
-import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.exception.AlreadyBoughtTicketException;
+import com.javaacademy.cinema.exception.NotFoundPlaceException;
 import com.javaacademy.cinema.exception.NotFoundTicketException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -89,6 +89,9 @@ public class TicketRepository {
                 where number = ?
                 """;
         Optional<Ticket> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToTicket, number));
+        if (result.isEmpty()) {
+            throw new NotFoundPlaceException("Место не существует.");
+        }
         log.info("Выполнен SQL запрос поиска по номеру: {}", sql);
         return result;
     }

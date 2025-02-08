@@ -1,7 +1,6 @@
 package com.javaacademy.cinema.repository;
 
 import com.javaacademy.cinema.entity.Movie;
-import com.javaacademy.cinema.entity.Place;
 import com.javaacademy.cinema.entity.Session;
 import com.javaacademy.cinema.exception.AlreadyExistsSessionException;
 import com.javaacademy.cinema.exception.NotFoundSessionException;
@@ -101,7 +100,7 @@ public class SessionRepository {
     public void checkPresenceSession(Integer id) {
         Optional<Session> session = selectById(id);
         if (session.isEmpty()) {
-            throw new NotFoundSessionException("Такого сеанса не существует");
+            throw new NotFoundSessionException("Сеанса не существует.");
         }
     }
 }
