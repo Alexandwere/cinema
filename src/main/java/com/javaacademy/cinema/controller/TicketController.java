@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -32,6 +33,7 @@ public class TicketController {
             @ApiResponse(responseCode = "200", description = "Успешное получение списка купленных билетов на сеанс."),
             @ApiResponse(responseCode = "400", description = "Сеанса не существует.")
     })
+    @Cacheable("buyTickets")
     @GetMapping("/saled/{id}")
     public List<TicketDto> findBuyTickets(@RequestHeader("token") String token,
                                           @RequestHeader("password") String password,

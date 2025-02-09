@@ -12,6 +12,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,6 +40,7 @@ public class CinemaController {
     @Operation(summary = "Получение всех фильмов",
             description = "Получение названия и описания всех фильмов")
     @ApiResponse(responseCode = "200", description = "Успешное получение списка фильмов")
+    @Cacheable("movies")
     @GetMapping("/movie")
     public List<MovieResponse> findMovies() {
         return movieService.findAll();
@@ -45,6 +49,7 @@ public class CinemaController {
     @Operation(summary = "Получение всех сеансов",
             description = "Получение всех сеансов с указанием номера сеанса, фильма, времени и цены билета")
     @ApiResponse(responseCode = "200", description = "Успешное получение списка сеансов")
+    @Cacheable("sessions")
     @GetMapping("/session")
     public List<SessionResponse> findSessions() {
         return sessionService.findAll();
@@ -56,6 +61,7 @@ public class CinemaController {
             @ApiResponse(responseCode = "200", description = "Успешное получение списка свободных мест на сеанс."),
             @ApiResponse(responseCode = "400", description = "Сеанса не существует.")
     })
+    @Cacheable("freePlaces")
     @GetMapping("/session/{id}/free-place")
     public List<String> findEmptyPlaces(@PathVariable Integer id) {
         return ticketService.findFreePlaces(id);
@@ -67,6 +73,10 @@ public class CinemaController {
             @ApiResponse(responseCode = "200", description = "Успешная покупка билета."),
             @ApiResponse(responseCode = "400", description = "Сеанса не существует."),
             @ApiResponse(responseCode = "400", description = "Места не существует.")
+    })
+    @Caching(evict = {
+            @CacheEvict(value = "freePlaces", allEntries = true),
+            @CacheEvict(value = "buyTickets", allEntries = true)
     })
     @PostMapping("/ticket/booking")
     public TicketResponse buyTicket(@RequestBody BookingDto bookingDto) {

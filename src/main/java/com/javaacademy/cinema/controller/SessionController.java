@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -34,6 +35,7 @@ public class SessionController {
             @ApiResponse(responseCode = "400", description = "Фильм не существует."),
             @ApiResponse(responseCode = "403", description = "Доступ запрещен.")
     })
+    @CacheEvict(value = "sessions", allEntries = true)
     @PostMapping
     public List<Ticket> saveSession(@RequestHeader("token") String token,
                                     @RequestHeader("password") String password,
