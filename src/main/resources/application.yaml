@@ -1,5 +1,3 @@
-server:
-  port: 8081
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/cinema
@@ -7,6 +5,6 @@ spring:
     password: postgres
     driver: org.postgresql.Driver
 app:
-  site-api: https://localhost:8081/cinema/api
-  admin_token: user-token
-  admin_password: secretadmin123
+  site-api: https://localhost:8080/cinema/api
+  admin_token: "user-token"
+  admin_password: "secretadmin123"

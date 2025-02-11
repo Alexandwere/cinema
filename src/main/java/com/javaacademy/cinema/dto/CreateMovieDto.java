@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MovieResponse {
+public class CreateMovieDto {
     @JsonProperty("name")
     private String title;
     private String description;

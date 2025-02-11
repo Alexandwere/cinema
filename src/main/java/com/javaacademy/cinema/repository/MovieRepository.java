@@ -73,10 +73,14 @@ public class MovieRepository {
         from movie
         where title = ?;
         """;
+        Optional<Movie> result;
         try {
-            Optional<Movie> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToMovie, title));
+            result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToMovie, title));
         } catch (EmptyResultDataAccessException e) {
-            throw new AlreadyExistsFilmException("Фильм уже существует.");
+            result = Optional.empty();
+        }
+        if (result.isPresent()) {
+            throw new AlreadyExistsFilmException("Фильм уже существует");
         }
 
         log.info("Выполнен SQL запрос проверки наличия фильма \"{}\" в БД", title);

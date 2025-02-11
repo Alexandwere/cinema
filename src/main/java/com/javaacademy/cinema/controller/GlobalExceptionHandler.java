@@ -3,7 +3,7 @@ package com.javaacademy.cinema.controller;
 import com.javaacademy.cinema.exception.AlreadyBoughtTicketException;
 import com.javaacademy.cinema.exception.AlreadyExistsFilmException;
 import com.javaacademy.cinema.exception.AlreadyExistsSessionException;
-import com.javaacademy.cinema.exception.InvalidPassword;
+import com.javaacademy.cinema.exception.InvalidAuthorization;
 import com.javaacademy.cinema.exception.NotFoundMovieException;
 import com.javaacademy.cinema.exception.NotFoundPlaceException;
 import com.javaacademy.cinema.exception.NotFoundSessionException;
@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(InvalidPassword.class)
-    public ResponseEntity<?> handleInvalidPasswordException(InvalidPassword e) {
+    @ExceptionHandler(InvalidAuthorization.class)
+    public ResponseEntity<?> handleInvalidPasswordException(InvalidAuthorization e) {
         log.warn(e.getMessage(), e);
         return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
     }

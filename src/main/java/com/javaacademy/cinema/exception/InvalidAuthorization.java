@@ -3,5 +3,5 @@ package com.javaacademy.cinema.exception;
 import lombok.experimental.StandardException;
 
 @StandardException
-public class InvalidPassword extends RuntimeException {
+public class InvalidAuthorization extends RuntimeException {
 }

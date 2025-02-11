@@ -1,7 +1,7 @@
 package com.javaacademy.cinema.mapper;
 
 import com.javaacademy.cinema.dto.MovieDto;
-import com.javaacademy.cinema.dto.MovieResponse;
+import com.javaacademy.cinema.dto.CreateMovieDto;
 import com.javaacademy.cinema.entity.Movie;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +10,7 @@ import java.util.List;
 @Component
 public class MovieMapper {
 
-    public Movie toEntity(MovieResponse movieDto) {
+    public Movie toEntity(CreateMovieDto movieDto) {
         Movie movie = new Movie();
         movie.setTitle(movieDto.getTitle());
         movie.setDescription(movieDto.getDescription());
@@ -25,14 +25,14 @@ public class MovieMapper {
         return movieDto;
     }
 
-    public List<MovieResponse> toResponses(List<Movie> movies) {
+    public List<CreateMovieDto> toResponses(List<Movie> movies) {
         return movies.stream().map(this::toResponse).toList();
     }
 
-    public MovieResponse toResponse(Movie movie) {
-        MovieResponse movieResponse = new MovieResponse();
-        movieResponse.setTitle(movie.getTitle());
-        movieResponse.setDescription(movie.getDescription());
-        return movieResponse;
+    public CreateMovieDto toResponse(Movie movie) {
+        CreateMovieDto createMovieDto = new CreateMovieDto();
+        createMovieDto.setTitle(movie.getTitle());
+        createMovieDto.setDescription(movie.getDescription());
+        return createMovieDto;
     }
 }

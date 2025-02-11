@@ -1,7 +1,7 @@
 package com.javaacademy.cinema.service;
 
 import com.javaacademy.cinema.dto.MovieDto;
-import com.javaacademy.cinema.dto.MovieResponse;
+import com.javaacademy.cinema.dto.CreateMovieDto;
 import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.mapper.MovieMapper;
 import com.javaacademy.cinema.repository.MovieRepository;
@@ -21,8 +21,8 @@ public class MovieService {
     /**
      Сохранение фильма
      */
-    public MovieDto saveMovie(MovieResponse movieResponse) {
-        Movie movie = movieRepository.save(movieMapper.toEntity(movieResponse));
+    public MovieDto saveMovie(CreateMovieDto createMovieDto) {
+        Movie movie = movieRepository.save(movieMapper.toEntity(createMovieDto));
         log.info("Сохранен фильм в БД.\n");
         return movieMapper.toDto(movie);
     }
@@ -30,7 +30,7 @@ public class MovieService {
     /**
      Показать все фильмы
      */
-    public List<MovieResponse> findAll() {
+    public List<CreateMovieDto> findAll() {
         List<Movie> movies = movieRepository.selectAll();
         log.info("Получены все фильмы.\n");
         return movieMapper.toResponses(movies);
