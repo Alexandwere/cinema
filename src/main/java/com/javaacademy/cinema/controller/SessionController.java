@@ -2,8 +2,6 @@ package com.javaacademy.cinema.controller;
 
 import com.javaacademy.cinema.dto.CreateSessionDto;
 import com.javaacademy.cinema.dto.TicketDto;
-import com.javaacademy.cinema.dto.TicketResponse;
-import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.service.SessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

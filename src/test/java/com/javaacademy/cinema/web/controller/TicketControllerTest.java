@@ -1,7 +1,7 @@
 package com.javaacademy.cinema.web.controller;
 
-import com.javaacademy.cinema.dto.MovieDto;
 import com.javaacademy.cinema.dto.CreateSessionDto;
+import com.javaacademy.cinema.dto.MovieDto;
 import com.javaacademy.cinema.dto.TicketDto;
 import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.entity.Session;
@@ -31,7 +31,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @AutoConfigureMockMvc
 @DisplayName("Тесты контроллера билетов")
@@ -83,7 +82,8 @@ public class TicketControllerTest {
                 .statusCode(HttpStatus.OK.value())
                 .extract()
                 .body()
-                .as(new TypeRef<>() {});
+                .as(new TypeRef<>() {
+                });
 
     }
 
@@ -105,8 +105,8 @@ public class TicketControllerTest {
 
     private MovieDto createTestMovie() {
         String expectedTitle = "Форсаж";
-        String expectedDescription = "Полицейский под прикрытием Брайан О'Коннор (Пол Уокер) внедряется в команду" +
-                " Доминика Торетто (Вин Дизель), чтобы раскрыть банду стритрейсеров, грабящих грузовики";
+        String expectedDescription = "Полицейский под прикрытием Брайан О'Коннор (Пол Уокер) внедряется в команду"
+                + " Доминика Торетто (Вин Дизель), чтобы раскрыть банду стритрейсеров, грабящих грузовики";
         return new MovieDto(expectedTitle, expectedDescription);
     }
 

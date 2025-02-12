@@ -1,7 +1,7 @@
 package com.javaacademy.cinema.web.controller;
 
-import com.javaacademy.cinema.dto.MovieDto;
 import com.javaacademy.cinema.dto.CreateSessionDto;
+import com.javaacademy.cinema.dto.MovieDto;
 import com.javaacademy.cinema.dto.TicketDto;
 import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.repository.MovieRepository;
@@ -43,7 +43,7 @@ public class SessionControllerTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private static final String CLEAN_TABLES = "delete from session; delete from movie;";
+    private static final String CLEAN_TABLES = "truncate table session, movie, ticket;";
     @BeforeEach()
     public void cleanUpData() {
         jdbcTemplate.execute(CLEAN_TABLES);
@@ -83,7 +83,8 @@ public class SessionControllerTest {
                 .statusCode(HttpStatus.CREATED.value())
                 .extract()
                 .body()
-                .as(new TypeRef<>() {});
+                .as(new TypeRef<>() {
+                });
 
         assertEquals(expectedCountPlace, tickets.size());
     }
@@ -110,8 +111,8 @@ public class SessionControllerTest {
 
     private MovieDto createTestMovie() {
         String expectedTitle = "Форсаж";
-        String expectedDescription = "Полицейский под прикрытием Брайан О'Коннор (Пол Уокер) внедряется в команду" +
-                " Доминика Торетто (Вин Дизель), чтобы раскрыть банду стритрейсеров, грабящих грузовики";
+        String expectedDescription = "Полицейский под прикрытием Брайан О'Коннор (Пол Уокер) внедряется в команду"
+                + " Доминика Торетто (Вин Дизель), чтобы раскрыть банду стритрейсеров, грабящих грузовики";
         return new MovieDto(expectedTitle, expectedDescription);
     }
 }

@@ -1,9 +1,8 @@
 package com.javaacademy.cinema.repository;
 
-import com.javaacademy.cinema.entity.Place;
+import com.javaacademy.cinema.dto.BookingDto;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.exception.AlreadyBoughtTicketException;
-import com.javaacademy.cinema.exception.NotFoundPlaceException;
 import com.javaacademy.cinema.exception.NotFoundTicketException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -47,6 +46,7 @@ public class TicketRepository {
                 set is_buy = true
                 where id = ?;
                 """;
+
         Optional<Ticket> currentTicket = selectById(id);
         if (currentTicket.isEmpty()) {
             throw new NotFoundTicketException("Билет не найден.");
@@ -104,4 +104,21 @@ public class TicketRepository {
         return result;
     }
 
+    public Optional<Integer> findByNumber(BookingDto bookingDto) {
+        String sql = """
+                select t.id
+                from ticket t join place p on p.id =t.place_id
+                where number = ? and t.session_id = ?;
+                """;
+        String number = bookingDto.getPlaceNumber();
+        Integer sessionId = bookingDto.getSessionId();
+        Optional<Integer> result;
+        try {
+            result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, Integer.class, number, sessionId));
+            log.info("Выполнен SQL запрос поиска по номеру сеанса и места: {}", sql);
+            return result;
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
 }

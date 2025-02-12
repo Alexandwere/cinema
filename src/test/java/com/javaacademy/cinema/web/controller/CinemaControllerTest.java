@@ -11,6 +11,7 @@ import com.javaacademy.cinema.entity.Session;
 import com.javaacademy.cinema.mapper.SessionMapper;
 import com.javaacademy.cinema.repository.MovieRepository;
 import com.javaacademy.cinema.repository.SessionRepository;
+import com.javaacademy.cinema.service.SessionService;
 import com.javaacademy.cinema.service.TicketService;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
@@ -49,6 +50,8 @@ public class CinemaControllerTest {
     private TicketService ticketService;
     @Autowired
     private SessionMapper sessionMapper;
+    @Autowired
+    private SessionService sessionService;
 
     private final RequestSpecification requestSpecification = new RequestSpecBuilder()
             .setBasePath("cinema/api")
@@ -82,7 +85,8 @@ public class CinemaControllerTest {
                 .statusCode(HttpStatus.OK.value())
                 .extract()
                 .body()
-                .as(new TypeRef<>() {});
+                .as(new TypeRef<>() {
+                });
 
         Assertions.assertEquals(expectedSize, tickets.size());
     }
@@ -100,7 +104,8 @@ public class CinemaControllerTest {
                 .statusCode(HttpStatus.OK.value())
                 .extract()
                 .body()
-                .as(new TypeRef<>() {});
+                .as(new TypeRef<>() {
+                });
 
         Assertions.assertEquals(expectedSize, sessions.size());
     }
@@ -108,9 +113,21 @@ public class CinemaControllerTest {
     @Test
     @DisplayName("Успешня покупка билета")
     public void buyTicketSuccess() {
-        Session session = createTestSession();
         String expectedNumber = "A1";
-        BookingDto bookingDto = new BookingDto(session.getId(), expectedNumber);
+
+        MovieDto movieDto = createTestMovie();
+        Movie realMovie = movieRepository.save(Movie.builder()
+                .title(movieDto.getTitle())
+                .description(movieDto.getDescription())
+                .build());
+        CreateSessionDto sessionDto = CreateSessionDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .movieId(realMovie.getId())
+                .price(BigDecimal.TEN)
+                .build();
+        List<TicketDto> tickets = sessionService.saveSession(sessionDto);
+        Integer sessionId = tickets.stream().findFirst().get().getSession().getId();
+        BookingDto bookingDto = new BookingDto(sessionId, expectedNumber);
 
         TicketResponse ticketResponse = given(requestSpecification)
                 .body(bookingDto)
@@ -121,36 +138,92 @@ public class CinemaControllerTest {
                 .extract()
                 .body()
                 .as(TicketResponse.class);
-
         Assertions.assertEquals(expectedNumber, ticketResponse.getPlaceNumber());
+    }
+
+    @Test
+    @DisplayName("Покупка билета - ошибка: Сеанс не найден")
+    public void buyTicketFailedNotFoundSession() {
+        String placeTestNumber = "A1";
+        int testSessionId = 5;
+
+        BookingDto bookingDto = new BookingDto(testSessionId, placeTestNumber);
+
+        given(requestSpecification)
+                .body(bookingDto)
+                .post("/ticket/booking")
+                .then()
+                .spec(responseSpecification)
+                .statusCode(HttpStatus.BAD_REQUEST.value());
+
+    }
+
+    @Test
+    @DisplayName("Покупка билета - ошибка: несуществующее место")
+    public void buyTicketFailedIncorrectPlace() {
+        String testPlaceNumber = "A100";
+
+        MovieDto movieDto = createTestMovie();
+        Movie realMovie = movieRepository.save(Movie.builder()
+                .title(movieDto.getTitle())
+                .description(movieDto.getDescription())
+                .build());
+        CreateSessionDto sessionDto = CreateSessionDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .movieId(realMovie.getId())
+                .price(BigDecimal.TEN)
+                .build();
+        List<TicketDto> tickets = sessionService.saveSession(sessionDto);
+        Integer sessionId = tickets.stream().findFirst().get().getSession().getId();
+        BookingDto bookingDto = new BookingDto(sessionId, testPlaceNumber);
+
+        given(requestSpecification)
+                .body(bookingDto)
+                .post("/ticket/booking")
+                .then()
+                .spec(responseSpecification)
+                .statusCode(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
     @DisplayName("Успешное получение всех свободных мест на сеанс")
     public void findEmptyPlaces() {
-        Session session = createTestSession();
+        MovieDto movieDto = createTestMovie();
+        Movie realMovie = movieRepository.save(Movie.builder()
+                .title(movieDto.getTitle())
+                .description(movieDto.getDescription())
+                .build());
+        CreateSessionDto sessionDto = CreateSessionDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .movieId(realMovie.getId())
+                .price(BigDecimal.TEN)
+                .build();
+        List<TicketDto> tickets = sessionService.saveSession(sessionDto);
+        Integer sessionId = tickets.stream().findFirst().get().getSession().getId();
+
         String placeNumber = "A1";
-        BookingDto bookingDto = new BookingDto(session.getId(), placeNumber);
+        BookingDto bookingDto = new BookingDto(sessionId, placeNumber);
         ticketService.buyTicket(bookingDto);
         int expectedSize = 9;
 
-        List<String> tickets = given(requestSpecification)
-                .pathParam("id", session.getId())
+        List<String> emptyPlaceTickets = given(requestSpecification)
+                .pathParam("id", sessionId)
                 .get("/session/{id}/free-place")
                 .then()
                 .spec(responseSpecification)
                 .statusCode(HttpStatus.OK.value())
                 .extract()
                 .body()
-                .as(new TypeRef<>() {});
+                .as(new TypeRef<>() {
+                });
 
-        Assertions.assertEquals(expectedSize, tickets.size());
+        Assertions.assertEquals(expectedSize, emptyPlaceTickets.size());
     }
 
     private MovieDto createTestMovie() {
         String expectedTitle = "Форсаж";
-        String expectedDescription = "Полицейский под прикрытием Брайан О'Коннор (Пол Уокер) внедряется в команду" +
-                " Доминика Торетто (Вин Дизель), чтобы раскрыть банду стритрейсеров, грабящих грузовики";
+        String expectedDescription = "Полицейский под прикрытием Брайан О'Коннор (Пол Уокер) внедряется в команду"
+                + " Доминика Торетто (Вин Дизель), чтобы раскрыть банду стритрейсеров, грабящих грузовики";
         return new MovieDto(expectedTitle, expectedDescription);
     }
 

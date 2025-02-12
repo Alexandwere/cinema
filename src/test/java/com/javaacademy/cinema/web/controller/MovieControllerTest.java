@@ -1,7 +1,7 @@
 package com.javaacademy.cinema.web.controller;
 
-import com.javaacademy.cinema.dto.MovieDto;
 import com.javaacademy.cinema.dto.AdminMovieDto;
+import com.javaacademy.cinema.dto.MovieDto;
 import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.repository.MovieRepository;
 import io.restassured.builder.RequestSpecBuilder;
@@ -21,7 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @AutoConfigureMockMvc
 @DisplayName("Тесты контроллера фильмов")
@@ -36,7 +36,7 @@ public class MovieControllerTest {
     @Value("${app.admin_password}")
     String truePassword;
 
-    private static final String CLEAN_MOVIE_TABLE = "delete from movie;";
+    private static final String CLEAN_MOVIE_TABLE = "truncate table session, movie, ticket;";
 
     private final RequestSpecification requestSpecification = new RequestSpecBuilder()
             .setBasePath("cinema/movie")
@@ -93,8 +93,8 @@ public class MovieControllerTest {
 
     private MovieDto createTestMovie() {
         String expectedTitle = "Форсаж";
-        String expectedDescription = "Полицейский под прикрытием Брайан О'Коннор (Пол Уокер) внедряется в команду" +
-                " Доминика Торетто (Вин Дизель), чтобы раскрыть банду стритрейсеров, грабящих грузовики";
+        String expectedDescription = "Полицейский под прикрытием Брайан О'Коннор (Пол Уокер) внедряется в команду"
+                + " Доминика Торетто (Вин Дизель), чтобы раскрыть банду стритрейсеров, грабящих грузовики";
         return new MovieDto(expectedTitle, expectedDescription);
     }
 

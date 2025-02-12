@@ -3,16 +3,16 @@ package com.javaacademy.cinema.service;
 import com.javaacademy.cinema.dto.CreateSessionDto;
 import com.javaacademy.cinema.dto.SessionResponse;
 import com.javaacademy.cinema.dto.TicketDto;
-import com.javaacademy.cinema.dto.TicketResponse;
 import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.entity.Place;
 import com.javaacademy.cinema.entity.Session;
-import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.exception.NotFoundMovieException;
 import com.javaacademy.cinema.mapper.SessionMapper;
+import com.javaacademy.cinema.mapper.TicketMapper;
 import com.javaacademy.cinema.repository.MovieRepository;
 import com.javaacademy.cinema.repository.PlaceRepository;
 import com.javaacademy.cinema.repository.SessionRepository;
+import com.javaacademy.cinema.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +28,8 @@ public class SessionService {
     private final PlaceRepository placeRepository;
     private final SessionMapper sessionMapper;
     private final MovieRepository movieRepository;
+    private final TicketRepository ticketRepository;
+    private final TicketMapper ticketMapper;
 
     /**
      Создание сеанса
@@ -50,8 +52,9 @@ public class SessionService {
                     .session(session)
                     .build())
                 .toList();
+        allTicket.stream().forEach(e -> ticketRepository.save(ticketMapper.toEntity(e)));
         log.info("Созданы не проданные билеты на сеанс {}.\n", session.getId());
-        log.info("Созданные места: ", allTicket);
+        log.info("Созданные места: {}", allTicket.size());
         return allTicket;
     }
 

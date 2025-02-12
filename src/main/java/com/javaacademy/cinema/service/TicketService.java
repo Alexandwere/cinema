@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -33,15 +34,12 @@ public class TicketService {
         sessionRepository.checkPresenceSession(bookingDto.getSessionId());
         Session session = sessionRepository.selectById(bookingDto.getSessionId()).get();
         Place place = placeRepository.selectByNumber(bookingDto.getPlaceNumber()).get();
-        Ticket ticket = Ticket.builder()
-                .place(place)
-                .session(session)
-                .build();
-        Ticket currentTicket = ticketRepository.save(ticket);
-        ticketRepository.buy(currentTicket.getId());
-        Movie movie = ticket.getSession().getMovie();
+        Optional<Integer> ticketId = ticketRepository.findByNumber(bookingDto);
+        log.info("Выполнен поиск id билета по сеансу и номеру места.");
+        ticketRepository.buy(ticketId.get());
+        Movie movie = session.getMovie();
 
-        TicketResponse ticketResponse = new TicketResponse(ticket.getId(), ticket.getPlace().getNumber(),
+        TicketResponse ticketResponse = new TicketResponse(ticketId.get(), place.getNumber(),
                 movie.getTitle(), session.getLocalDateTime());
         log.info("Получен билет для посетителя");
         return ticketResponse;
@@ -60,9 +58,8 @@ public class TicketService {
      Показать свободные места на сеанс
      */
     public List<String> findFreePlaces(Integer id) {
-        List<TicketDto> tickets = findAllBuyTicket(id);
+        List<Ticket> tickets = ticketRepository.selectNotBuyTickets(id);
         List<String> numbers = tickets.stream()
-                .filter(e -> !e.getIsBuy())
                 .map(e -> e.getPlace().getNumber())
                 .toList();
         log.info("Получены номера свободных мест на сеанс.\n");
