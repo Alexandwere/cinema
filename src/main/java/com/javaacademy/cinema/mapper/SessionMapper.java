@@ -1,6 +1,6 @@
 package com.javaacademy.cinema.mapper;
 
-import com.javaacademy.cinema.dto.SessionCreateDto;
+import com.javaacademy.cinema.dto.CreateSessionDto;
 import com.javaacademy.cinema.dto.SessionDto;
 import com.javaacademy.cinema.dto.SessionResponse;
 import com.javaacademy.cinema.entity.Session;
@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SessionMapper {
 
-    public Session toEntity(SessionCreateDto sessionDto) {
+    public Session toEntity(CreateSessionDto sessionDto) {
         Session session = new Session();
         session.setPrice(sessionDto.getPrice());
         session.setLocalDateTime(sessionDto.getLocalDateTime());

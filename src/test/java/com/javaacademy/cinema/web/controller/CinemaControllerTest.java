@@ -1,0 +1,173 @@
+package com.javaacademy.cinema.web.controller;
+
+import com.javaacademy.cinema.dto.BookingDto;
+import com.javaacademy.cinema.dto.CreateSessionDto;
+import com.javaacademy.cinema.dto.MovieDto;
+import com.javaacademy.cinema.dto.SessionResponse;
+import com.javaacademy.cinema.dto.TicketDto;
+import com.javaacademy.cinema.dto.TicketResponse;
+import com.javaacademy.cinema.entity.Movie;
+import com.javaacademy.cinema.entity.Session;
+import com.javaacademy.cinema.mapper.SessionMapper;
+import com.javaacademy.cinema.repository.MovieRepository;
+import com.javaacademy.cinema.repository.SessionRepository;
+import com.javaacademy.cinema.service.TicketService;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.common.mapper.TypeRef;
+import io.restassured.filter.log.LogDetail;
+import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static io.restassured.RestAssured.given;
+
+@AutoConfigureMockMvc
+@DisplayName("Тесты контроллера кинотеарта")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+public class CinemaControllerTest {
+    @Autowired
+    private MovieRepository movieRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private SessionRepository sessionRepository;
+    @Autowired
+    private TicketService ticketService;
+    @Autowired
+    private SessionMapper sessionMapper;
+
+    private final RequestSpecification requestSpecification = new RequestSpecBuilder()
+            .setBasePath("cinema/api")
+            .setContentType(ContentType.JSON)
+            .log(LogDetail.ALL)
+            .build();
+    private final ResponseSpecification responseSpecification = new ResponseSpecBuilder()
+            .log(LogDetail.ALL)
+            .build();
+
+    private static final String CLEAN_TABLES = "truncate table session, movie, ticket;";
+    @BeforeEach()
+    public void cleanUpData() {
+        jdbcTemplate.execute(CLEAN_TABLES);
+    }
+
+    @Test
+    @DisplayName("Успешное получение всех фильмов")
+    public void findAllMovies() {
+        int expectedSize = 1;
+        MovieDto movieDto = createTestMovie();
+        movieRepository.save(Movie.builder()
+                .title(movieDto.getTitle())
+                .description(movieDto.getDescription())
+                .build());
+
+        List<MovieDto> tickets = given(requestSpecification)
+                .get("/movie")
+                .then()
+                .spec(responseSpecification)
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .body()
+                .as(new TypeRef<>() {});
+
+        Assertions.assertEquals(expectedSize, tickets.size());
+    }
+
+    @Test
+    @DisplayName("Успешное получение всех сеансов")
+    public void findAllSessions() {
+        int expectedSize = 1;
+        Session session = createTestSession();
+
+        List<SessionResponse> sessions = given(requestSpecification)
+                .get("/session")
+                .then()
+                .spec(responseSpecification)
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .body()
+                .as(new TypeRef<>() {});
+
+        Assertions.assertEquals(expectedSize, sessions.size());
+    }
+
+    @Test
+    @DisplayName("Успешня покупка билета")
+    public void buyTicketSuccess() {
+        Session session = createTestSession();
+        String expectedNumber = "A1";
+        BookingDto bookingDto = new BookingDto(session.getId(), expectedNumber);
+
+        TicketResponse ticketResponse = given(requestSpecification)
+                .body(bookingDto)
+                .post("/ticket/booking")
+                .then()
+                .spec(responseSpecification)
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .body()
+                .as(TicketResponse.class);
+
+        Assertions.assertEquals(expectedNumber, ticketResponse.getPlaceNumber());
+    }
+
+    @Test
+    @DisplayName("Успешное получение всех свободных мест на сеанс")
+    public void findEmptyPlaces() {
+        Session session = createTestSession();
+        String placeNumber = "A1";
+        BookingDto bookingDto = new BookingDto(session.getId(), placeNumber);
+        ticketService.buyTicket(bookingDto);
+        int expectedSize = 9;
+
+        List<String> tickets = given(requestSpecification)
+                .pathParam("id", session.getId())
+                .get("/session/{id}/free-place")
+                .then()
+                .spec(responseSpecification)
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .body()
+                .as(new TypeRef<>() {});
+
+        Assertions.assertEquals(expectedSize, tickets.size());
+    }
+
+    private MovieDto createTestMovie() {
+        String expectedTitle = "Форсаж";
+        String expectedDescription = "Полицейский под прикрытием Брайан О'Коннор (Пол Уокер) внедряется в команду" +
+                " Доминика Торетто (Вин Дизель), чтобы раскрыть банду стритрейсеров, грабящих грузовики";
+        return new MovieDto(expectedTitle, expectedDescription);
+    }
+
+    private Session createTestSession() {
+        MovieDto movieDto = createTestMovie();
+        Movie realMovie = movieRepository.save(Movie.builder()
+                .title(movieDto.getTitle())
+                .description(movieDto.getDescription())
+                .build());
+        CreateSessionDto sessionDto = CreateSessionDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .movieId(realMovie.getId())
+                .price(BigDecimal.TEN)
+                .build();
+        Session session = sessionMapper.toEntity(sessionDto);
+        session.setMovie(realMovie);
+        return sessionRepository.save(session);
+    }
+
+}

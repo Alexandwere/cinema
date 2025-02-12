@@ -1,11 +1,17 @@
 package com.javaacademy.cinema.web.controller;
 
 import com.javaacademy.cinema.dto.MovieDto;
-import com.javaacademy.cinema.dto.AdminMovieDto;
+import com.javaacademy.cinema.dto.CreateSessionDto;
+import com.javaacademy.cinema.dto.TicketDto;
 import com.javaacademy.cinema.entity.Movie;
+import com.javaacademy.cinema.entity.Session;
+import com.javaacademy.cinema.mapper.SessionMapper;
 import com.javaacademy.cinema.repository.MovieRepository;
+import com.javaacademy.cinema.repository.SessionRepository;
+import com.javaacademy.cinema.repository.TicketRepository;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
@@ -20,26 +26,40 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @AutoConfigureMockMvc
-@DisplayName("Тесты контроллера фильмов")
+@DisplayName("Тесты контроллера билетов")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-public class MovieControllerTest {
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private MovieRepository movieRepository;
+public class TicketControllerTest {
     @Value("${app.admin_token}")
     String trueToken;
     @Value("${app.admin_password}")
     String truePassword;
+    @Autowired
+    private TicketRepository ticketRepository;
+    @Autowired
+    private MovieRepository movieRepository;
+    @Autowired
+    private SessionRepository sessionRepository;
+    @Autowired
+    private SessionMapper sessionMapper;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-    private static final String CLEAN_MOVIE_TABLE = "delete from movie;";
+    private static final String CLEAN_TABLES = "delete from session; delete from movie; delete from ticket";
+    @BeforeEach()
+    public void cleanUpData() {
+        jdbcTemplate.execute(CLEAN_TABLES);
+    }
 
     private final RequestSpecification requestSpecification = new RequestSpecBuilder()
-            .setBasePath("cinema/movie")
+            .setBasePath("cinema/ticket")
             .setContentType(ContentType.JSON)
             .log(LogDetail.ALL)
             .build();
@@ -47,45 +67,37 @@ public class MovieControllerTest {
             .log(LogDetail.ALL)
             .build();
 
-    @BeforeEach()
-    public void cleanUpData() {
-        jdbcTemplate.execute(CLEAN_MOVIE_TABLE);
-    }
 
     @Test
-    @DisplayName("Сохранение фильма - успешно")
-    public void createMovieSuccess() {
-        MovieDto movieDto = createTestMovie();
+    @DisplayName("Успешное получение купленных билетов")
+    public void findBuyTicketsSuccess() {
+        Session session = createTestSession();
 
-        AdminMovieDto resultMovie = given(requestSpecification)
+        List<TicketDto> tickets = given(requestSpecification)
                 .header("token", trueToken)
                 .header("password", truePassword)
-                .body(movieDto)
-                .post()
+                .pathParam("id", session.getId())
+                .get("/saled/{id}")
                 .then()
                 .spec(responseSpecification)
-                .statusCode(HttpStatus.CREATED.value())
+                .statusCode(HttpStatus.OK.value())
                 .extract()
-                .as(AdminMovieDto.class);
+                .body()
+                .as(new TypeRef<>() {});
 
-        assertEquals(movieDto.getTitle(), resultMovie.getTitle());
-        assertEquals(movieDto.getDescription(), resultMovie.getDescription());
     }
 
     @Test
-    @DisplayName("Сохранение фильма - ошибка: Фильм уже существует")
-    public void createMovieFailed() {
-        MovieDto movieDto = createTestMovie();
-        movieRepository.save(Movie.builder()
-                .title(movieDto.getTitle())
-                .description(movieDto.getDescription())
-                .build());
+    @DisplayName("Получение купленных билетов - ошибка: Нет такого сеанса")
+    public void findBuyTicketsFailed() {
+        int fakeSessionId = -5;
+        Session session = createTestSession();
 
         given(requestSpecification)
                 .header("token", trueToken)
                 .header("password", truePassword)
-                .body(movieDto)
-                .post()
+                .pathParam("id", fakeSessionId)
+                .get("/saled/{id}")
                 .then()
                 .spec(responseSpecification)
                 .statusCode(HttpStatus.BAD_REQUEST.value());
@@ -98,4 +110,19 @@ public class MovieControllerTest {
         return new MovieDto(expectedTitle, expectedDescription);
     }
 
+    private Session createTestSession() {
+        MovieDto movieDto = createTestMovie();
+        Movie realMovie = movieRepository.save(Movie.builder()
+                .title(movieDto.getTitle())
+                .description(movieDto.getDescription())
+                .build());
+        CreateSessionDto sessionDto = CreateSessionDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .movieId(realMovie.getId())
+                .price(BigDecimal.TEN)
+                .build();
+        Session session = sessionMapper.toEntity(sessionDto);
+        session.setMovie(realMovie);
+        return sessionRepository.save(session);
+    }
 }

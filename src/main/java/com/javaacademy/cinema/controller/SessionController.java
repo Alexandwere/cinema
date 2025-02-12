@@ -1,6 +1,8 @@
 package com.javaacademy.cinema.controller;
 
-import com.javaacademy.cinema.dto.SessionCreateDto;
+import com.javaacademy.cinema.dto.CreateSessionDto;
+import com.javaacademy.cinema.dto.TicketDto;
+import com.javaacademy.cinema.dto.TicketResponse;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.service.SessionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,9 +42,9 @@ public class SessionController {
     @CacheEvict(value = "sessions", allEntries = true)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public List<Ticket> saveSession(@RequestHeader("token") String token,
-                                    @RequestHeader("password") String password,
-                                    @RequestBody SessionCreateDto sessionDto) {
+    public List<TicketDto> saveSession(@RequestHeader("token") String token,
+                                       @RequestHeader("password") String password,
+                                       @RequestBody CreateSessionDto sessionDto) {
         validator.checkAdmin(token, password);
         return sessionService.saveSession(sessionDto);
     }

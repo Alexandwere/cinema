@@ -31,7 +31,7 @@ public class SessionRepository {
         BigDecimal price = session.getPrice();
         String sql = """
                 insert into session (movie_id, date_and_time, price)
-                value (?, ?, ?)
+                values (?, ?, ?)
                 returning id;
                 """;
         log.info("Выполнен SQL запрос на сохранение сеанса: {}\n фильм: {}, цена: {}\n", sql,

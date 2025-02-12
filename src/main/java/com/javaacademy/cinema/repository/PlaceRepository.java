@@ -1,6 +1,7 @@
 package com.javaacademy.cinema.repository;
 
 import com.javaacademy.cinema.entity.Place;
+import com.javaacademy.cinema.exception.NotFoundPlaceException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,22 @@ public class PlaceRepository {
                 from place;
                 """;
         return jdbcTemplate.query(sql, this::mapToPlace);
+    }
+
+    public Optional<Place> selectByNumber(String number) {
+        String sql = """
+                select *
+                from place
+                where number = ?
+                """;
+        Optional<Place> result;
+        try {
+            result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToPlace, number));
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundPlaceException("Место не существует.");
+        }
+        log.info("Выполнен SQL запрос поиска по номеру: {}", sql);
+        return result;
     }
 
     @SneakyThrows

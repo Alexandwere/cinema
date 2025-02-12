@@ -1,11 +1,13 @@
 package com.javaacademy.cinema.web.controller;
 
 import com.javaacademy.cinema.dto.MovieDto;
-import com.javaacademy.cinema.dto.AdminMovieDto;
+import com.javaacademy.cinema.dto.CreateSessionDto;
+import com.javaacademy.cinema.dto.TicketDto;
 import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.repository.MovieRepository;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
@@ -20,26 +22,35 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @AutoConfigureMockMvc
-@DisplayName("Тесты контроллера фильмов")
+@DisplayName("Тесты контроллера сеансов")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-public class MovieControllerTest {
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private MovieRepository movieRepository;
+public class SessionControllerTest {
     @Value("${app.admin_token}")
     String trueToken;
     @Value("${app.admin_password}")
     String truePassword;
 
-    private static final String CLEAN_MOVIE_TABLE = "delete from movie;";
+    @Autowired
+    private MovieRepository movieRepository;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    private static final String CLEAN_TABLES = "delete from session; delete from movie;";
+    @BeforeEach()
+    public void cleanUpData() {
+        jdbcTemplate.execute(CLEAN_TABLES);
+    }
 
     private final RequestSpecification requestSpecification = new RequestSpecBuilder()
-            .setBasePath("cinema/movie")
+            .setBasePath("cinema/session")
             .setContentType(ContentType.JSON)
             .log(LogDetail.ALL)
             .build();
@@ -47,44 +58,50 @@ public class MovieControllerTest {
             .log(LogDetail.ALL)
             .build();
 
-    @BeforeEach()
-    public void cleanUpData() {
-        jdbcTemplate.execute(CLEAN_MOVIE_TABLE);
-    }
-
     @Test
-    @DisplayName("Сохранение фильма - успешно")
-    public void createMovieSuccess() {
+    @DisplayName("Создание сеанса - успешно")
+    public void createSessionSuccess() {
+        int expectedCountPlace = 10;
         MovieDto movieDto = createTestMovie();
+        Movie realMovie = movieRepository.save(Movie.builder()
+                .title(movieDto.getTitle())
+                .description(movieDto.getDescription())
+                .build());
+        CreateSessionDto sessionDto = CreateSessionDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .movieId(realMovie.getId())
+                .price(BigDecimal.TEN)
+                .build();
 
-        AdminMovieDto resultMovie = given(requestSpecification)
+        List<TicketDto> tickets = given(requestSpecification)
                 .header("token", trueToken)
                 .header("password", truePassword)
-                .body(movieDto)
+                .body(sessionDto)
                 .post()
                 .then()
                 .spec(responseSpecification)
                 .statusCode(HttpStatus.CREATED.value())
                 .extract()
-                .as(AdminMovieDto.class);
+                .body()
+                .as(new TypeRef<>() {});
 
-        assertEquals(movieDto.getTitle(), resultMovie.getTitle());
-        assertEquals(movieDto.getDescription(), resultMovie.getDescription());
+        assertEquals(expectedCountPlace, tickets.size());
     }
 
     @Test
-    @DisplayName("Сохранение фильма - ошибка: Фильм уже существует")
-    public void createMovieFailed() {
-        MovieDto movieDto = createTestMovie();
-        movieRepository.save(Movie.builder()
-                .title(movieDto.getTitle())
-                .description(movieDto.getDescription())
-                .build());
+    @DisplayName("Создание сеанса - обишка: Фильм не существует")
+    public void createSessionFailed() {
+        int fakeFilmId = 5;
+        CreateSessionDto sessionDto = CreateSessionDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .movieId(fakeFilmId)
+                .price(BigDecimal.TEN)
+                .build();
 
         given(requestSpecification)
                 .header("token", trueToken)
                 .header("password", truePassword)
-                .body(movieDto)
+                .body(sessionDto)
                 .post()
                 .then()
                 .spec(responseSpecification)
@@ -97,5 +114,4 @@ public class MovieControllerTest {
                 " Доминика Торетто (Вин Дизель), чтобы раскрыть банду стритрейсеров, грабящих грузовики";
         return new MovieDto(expectedTitle, expectedDescription);
     }
-
 }

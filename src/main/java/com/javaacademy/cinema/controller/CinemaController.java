@@ -1,7 +1,7 @@
 package com.javaacademy.cinema.controller;
 
 import com.javaacademy.cinema.dto.BookingDto;
-import com.javaacademy.cinema.dto.CreateMovieDto;
+import com.javaacademy.cinema.dto.MovieDto;
 import com.javaacademy.cinema.dto.SessionResponse;
 import com.javaacademy.cinema.dto.TicketResponse;
 import com.javaacademy.cinema.service.MovieService;
@@ -42,7 +42,7 @@ public class CinemaController {
     @ApiResponse(responseCode = "200", description = "Успешное получение списка фильмов")
     @Cacheable("movies")
     @GetMapping("/movie")
-    public List<CreateMovieDto> findMovies() {
+    public List<MovieDto> findMovies() {
         return movieService.findAll();
     }
 

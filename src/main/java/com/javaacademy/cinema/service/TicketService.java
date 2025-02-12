@@ -8,6 +8,7 @@ import com.javaacademy.cinema.entity.Place;
 import com.javaacademy.cinema.entity.Session;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.mapper.TicketMapper;
+import com.javaacademy.cinema.repository.PlaceRepository;
 import com.javaacademy.cinema.repository.SessionRepository;
 import com.javaacademy.cinema.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final TicketMapper ticketMapper;
     private final SessionRepository sessionRepository;
+    private final PlaceRepository placeRepository;
 
     /**
      Покупка билета
@@ -30,7 +32,7 @@ public class TicketService {
     public TicketResponse buyTicket(BookingDto bookingDto) {
         sessionRepository.checkPresenceSession(bookingDto.getSessionId());
         Session session = sessionRepository.selectById(bookingDto.getSessionId()).get();
-        Place place = ticketRepository.selectByNumber(bookingDto.getPlaceNumber()).get().getPlace();
+        Place place = placeRepository.selectByNumber(bookingDto.getPlaceNumber()).get();
         Ticket ticket = Ticket.builder()
                 .place(place)
                 .session(session)

@@ -1,7 +1,7 @@
 package com.javaacademy.cinema.controller;
 
+import com.javaacademy.cinema.dto.AdminMovieDto;
 import com.javaacademy.cinema.dto.MovieDto;
-import com.javaacademy.cinema.dto.CreateMovieDto;
 import com.javaacademy.cinema.service.MovieService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,10 +38,10 @@ public class MovieController {
     @CacheEvict(value = "movies", allEntries = true)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MovieDto saveMovie(@RequestHeader(name = "token") String token,
-                              @RequestHeader(name = "password") String password,
-                              @RequestBody CreateMovieDto createMovieDto) {
+    public AdminMovieDto saveMovie(@RequestHeader(name = "token") String token,
+                                   @RequestHeader(name = "password") String password,
+                                   @RequestBody MovieDto movieDto) {
         validator.checkAdmin(token, password);
-        return movieService.saveMovie(createMovieDto);
+        return movieService.saveMovie(movieDto);
     }
 }

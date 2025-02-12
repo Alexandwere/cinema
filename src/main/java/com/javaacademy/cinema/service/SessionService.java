@@ -1,7 +1,9 @@
 package com.javaacademy.cinema.service;
 
-import com.javaacademy.cinema.dto.SessionCreateDto;
+import com.javaacademy.cinema.dto.CreateSessionDto;
 import com.javaacademy.cinema.dto.SessionResponse;
+import com.javaacademy.cinema.dto.TicketDto;
+import com.javaacademy.cinema.dto.TicketResponse;
 import com.javaacademy.cinema.entity.Movie;
 import com.javaacademy.cinema.entity.Place;
 import com.javaacademy.cinema.entity.Session;
@@ -30,22 +32,26 @@ public class SessionService {
     /**
      Создание сеанса
      */
-    public List<Ticket> saveSession(SessionCreateDto sessionDto) {
+    public List<TicketDto> saveSession(CreateSessionDto sessionDto) {
         Optional<Movie> movie = movieRepository.selectMovieById(sessionDto.getMovieId());
         if (movie.isEmpty()) {
             throw new NotFoundMovieException("Фильм с таким ID не существует.");
         }
-        Session session = sessionRepository.save(sessionMapper.toEntity(sessionDto));
+        Session sessionToData = sessionMapper.toEntity(sessionDto);
+        sessionToData.setMovie(movie.get());
+        Session session = sessionRepository.save(sessionToData);
+
         log.info("Создан сеанс № {}.\n", session.getId());
         List<Place> allPlace = placeRepository.selectAll();
-        List<Ticket> allTicket = allPlace.stream()
-                .map(e -> Ticket.builder()
+        List<TicketDto> allTicket = allPlace.stream()
+                .map(e -> TicketDto.builder()
                     .place(e)
                     .isBuy(false)
                     .session(session)
                     .build())
                 .toList();
         log.info("Созданы не проданные билеты на сеанс {}.\n", session.getId());
+        log.info("Созданные места: ", allTicket);
         return allTicket;
     }
 

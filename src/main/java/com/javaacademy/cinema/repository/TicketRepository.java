@@ -1,5 +1,6 @@
 package com.javaacademy.cinema.repository;
 
+import com.javaacademy.cinema.entity.Place;
 import com.javaacademy.cinema.entity.Ticket;
 import com.javaacademy.cinema.exception.AlreadyBoughtTicketException;
 import com.javaacademy.cinema.exception.NotFoundPlaceException;
@@ -30,7 +31,7 @@ public class TicketRepository {
 
         String sql = """
                 insert into ticket (place_id, session_id, is_buy)
-                value (?, ?, ?)
+                values (?, ?, ?)
                 returning id;
                 """;
         Integer id = jdbcTemplate.queryForObject(sql, Integer.class, placeId, sessionId, isBuy);
@@ -80,20 +81,6 @@ public class TicketRepository {
         } catch (EmptyResultDataAccessException e) {
             return (Optional.empty());
         }
-    }
-
-    public Optional<Ticket> selectByNumber(String number) {
-        String sql = """
-                select *
-                from ticket
-                where number = ?
-                """;
-        Optional<Ticket> result = Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::mapToTicket, number));
-        if (result.isEmpty()) {
-            throw new NotFoundPlaceException("Место не существует.");
-        }
-        log.info("Выполнен SQL запрос поиска по номеру: {}", sql);
-        return result;
     }
 
     @SneakyThrows
