@@ -1,8 +1,11 @@
-package com.javaacademy.cinema.controller;
+package com.javaacademy.cinema.controller.admin;
 
+import com.javaacademy.cinema.controller.Validator;
 import com.javaacademy.cinema.dto.TicketDto;
 import com.javaacademy.cinema.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,8 +33,12 @@ public class TicketController {
     @Operation(summary = "Получение списка купленных билетов",
         description = "Получение списка купленных билетов по номеру сеанса")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Успешное получение списка купленных билетов на сеанс."),
-            @ApiResponse(responseCode = "400", description = "Сеанса не существует.")
+            @ApiResponse(responseCode = "200", description = "Успешное получение списка купленных билетов на сеанс.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TicketDto.class))),
+            @ApiResponse(responseCode = "404", description = "Сеанса не существует.",
+                    content = @Content(mediaType = "plain/text"))
     })
     @Cacheable("buyTickets")
     @GetMapping("/saled/{id}")

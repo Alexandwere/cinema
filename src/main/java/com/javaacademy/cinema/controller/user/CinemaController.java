@@ -1,4 +1,4 @@
-package com.javaacademy.cinema.controller;
+package com.javaacademy.cinema.controller.user;
 
 import com.javaacademy.cinema.dto.BookingDto;
 import com.javaacademy.cinema.dto.MovieDto;
@@ -8,6 +8,8 @@ import com.javaacademy.cinema.service.MovieService;
 import com.javaacademy.cinema.service.SessionService;
 import com.javaacademy.cinema.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,7 +41,10 @@ public class CinemaController {
 
     @Operation(summary = "Получение всех фильмов",
             description = "Получение названия и описания всех фильмов")
-    @ApiResponse(responseCode = "200", description = "Успешное получение списка фильмов")
+    @ApiResponse(responseCode = "200", description = "Успешное получение списка фильмов",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = MovieDto.class)))
     @Cacheable("movies")
     @GetMapping("/movie")
     public List<MovieDto> findMovies() {
@@ -48,7 +53,10 @@ public class CinemaController {
 
     @Operation(summary = "Получение всех сеансов",
             description = "Получение всех сеансов с указанием номера сеанса, фильма, времени и цены билета")
-    @ApiResponse(responseCode = "200", description = "Успешное получение списка сеансов")
+    @ApiResponse(responseCode = "200", description = "Успешное получение списка сеансов",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = SessionResponse.class)))
     @Cacheable("sessions")
     @GetMapping("/session")
     public List<SessionResponse> findSessions() {
@@ -58,8 +66,12 @@ public class CinemaController {
     @Operation(summary = "Получение свободных мест на сеанс",
             description = "Получение свободных мест на сеанс по его номеру")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Успешное получение списка свободных мест на сеанс."),
-            @ApiResponse(responseCode = "400", description = "Сеанса не существует.")
+            @ApiResponse(responseCode = "200", description = "Успешное получение списка свободных мест на сеанс.",
+                    content = @Content(
+                            mediaType = "plain/text",
+                            schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "404", description = "Сеанса не существует.",
+                    content = @Content(mediaType = "plain/text"))
     })
     @Cacheable("freePlaces")
     @GetMapping("/session/{id}/free-place")
@@ -70,9 +82,14 @@ public class CinemaController {
     @Operation(summary = "Покупка билета",
             description = "Покупка билета по номеру сеанса и месту")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Успешная покупка билета."),
-            @ApiResponse(responseCode = "400", description = "Сеанса не существует."),
-            @ApiResponse(responseCode = "400", description = "Места не существует.")
+            @ApiResponse(responseCode = "200", description = "Успешная покупка билета.",
+                    content = @Content(
+                            mediaType = "plain/text",
+                            schema = @Schema(implementation = TicketResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Сеанса или места не существует.",
+                    content = @Content(mediaType = "plain/text")),
+            @ApiResponse(responseCode = "409", description = "Место занято",
+                    content = @Content(mediaType = "plain/text"))
     })
     @Caching(evict = {
             @CacheEvict(value = "freePlaces", allEntries = true),

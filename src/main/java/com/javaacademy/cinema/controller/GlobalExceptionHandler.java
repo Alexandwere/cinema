@@ -8,6 +8,7 @@ import com.javaacademy.cinema.exception.NotFoundMovieException;
 import com.javaacademy.cinema.exception.NotFoundPlaceException;
 import com.javaacademy.cinema.exception.NotFoundSessionException;
 import com.javaacademy.cinema.exception.NotFoundTicketException;
+import com.javaacademy.cinema.exception.OccupiedPlaceException;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidAuthorization.class)
-    public ResponseEntity<?> handleInvalidPasswordException(InvalidAuthorization e) {
+    public ResponseEntity<?> handle403Exception(InvalidAuthorization e) {
         log.warn(e.getMessage(), e);
         return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
     }
@@ -32,18 +33,19 @@ public class GlobalExceptionHandler {
             NotFoundTicketException.class,
             NotFoundPlaceException.class
     })
-    public ResponseEntity<?> handle400Exception(RuntimeException e) {
+    public ResponseEntity<?> handle404Exception(RuntimeException e) {
         log.warn(e.getMessage(), e);
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler({
             AlreadyBoughtTicketException.class,
             AlreadyExistsFilmException.class,
             AlreadyExistsSessionException.class,
+            OccupiedPlaceException.class
     })
-    public ResponseEntity<?> handle405Exception(RuntimeException e) {
+    public ResponseEntity<?> handle409Exception(RuntimeException e) {
         log.warn(e.getMessage(), e);
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
 }

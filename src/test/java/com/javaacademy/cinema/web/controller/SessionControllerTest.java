@@ -43,6 +43,8 @@ public class SessionControllerTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    private static final int FAKE_FILM_ID = 5;
+    private static final int EXPECTED_COUNT_PLACE = 10;
     private static final String CLEAN_TABLES = "truncate table session, movie, ticket;";
     @BeforeEach()
     public void cleanUpData() {
@@ -61,7 +63,6 @@ public class SessionControllerTest {
     @Test
     @DisplayName("Создание сеанса - успешно")
     public void createSessionSuccess() {
-        int expectedCountPlace = 10;
         MovieDto movieDto = createTestMovie();
         Movie realMovie = movieRepository.save(Movie.builder()
                 .title(movieDto.getTitle())
@@ -86,16 +87,15 @@ public class SessionControllerTest {
                 .as(new TypeRef<>() {
                 });
 
-        assertEquals(expectedCountPlace, tickets.size());
+        assertEquals(EXPECTED_COUNT_PLACE, tickets.size());
     }
 
     @Test
     @DisplayName("Создание сеанса - обишка: Фильм не существует")
     public void createSessionFailed() {
-        int fakeFilmId = 5;
         CreateSessionDto sessionDto = CreateSessionDto.builder()
                 .localDateTime(LocalDateTime.now())
-                .movieId(fakeFilmId)
+                .movieId(FAKE_FILM_ID)
                 .price(BigDecimal.TEN)
                 .build();
 
@@ -106,7 +106,7 @@ public class SessionControllerTest {
                 .post()
                 .then()
                 .spec(responseSpecification)
-                .statusCode(HttpStatus.BAD_REQUEST.value());
+                .statusCode(HttpStatus.NOT_FOUND.value());
     }
 
     private MovieDto createTestMovie() {

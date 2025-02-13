@@ -1,9 +1,12 @@
-package com.javaacademy.cinema.controller;
+package com.javaacademy.cinema.controller.admin;
 
+import com.javaacademy.cinema.controller.Validator;
 import com.javaacademy.cinema.dto.AdminMovieDto;
 import com.javaacademy.cinema.dto.MovieDto;
 import com.javaacademy.cinema.service.MovieService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,9 +34,14 @@ public class MovieController {
     @Operation(summary = "Сохранение фильма",
         description = "Сохранения фильма с названием и описанием.")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Успешное сохранение фильма."),
-            @ApiResponse(responseCode = "400", description = "Фильм уже существует."),
-            @ApiResponse(responseCode = "403", description = "Доступ запрещен.")
+            @ApiResponse(responseCode = "201", description = "Успешное сохранение фильма.",
+                    content = @Content(
+                                mediaType = "application/json",
+                                schema = @Schema(implementation = AdminMovieDto.class))),
+            @ApiResponse(responseCode = "400", description = "Фильм уже существует.",
+                    content = @Content(mediaType = "plain/text")),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен.",
+                    content = @Content(mediaType = "plain/text"))
     })
     @CacheEvict(value = "movies", allEntries = true)
     @PostMapping

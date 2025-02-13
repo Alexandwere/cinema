@@ -62,7 +62,9 @@ public class CinemaControllerTest {
             .log(LogDetail.ALL)
             .build();
 
-    private static final String CLEAN_TABLES = "truncate table session, movie, ticket;";
+    private static final int TEST_SESSION_ID = 5;
+    private static final int EXPECTED_EMPTY_PLACES = 9;;
+    private static final String CLEAN_TABLES = "delete from ticket; delete from session; delete from movie;";
     @BeforeEach()
     public void cleanUpData() {
         jdbcTemplate.execute(CLEAN_TABLES);
@@ -96,6 +98,7 @@ public class CinemaControllerTest {
     public void findAllSessions() {
         int expectedSize = 1;
         Session session = createTestSession();
+        sessionRepository.save(session);
 
         List<SessionResponse> sessions = given(requestSpecification)
                 .get("/session")
@@ -114,19 +117,7 @@ public class CinemaControllerTest {
     @DisplayName("Успешня покупка билета")
     public void buyTicketSuccess() {
         String expectedNumber = "A1";
-
-        MovieDto movieDto = createTestMovie();
-        Movie realMovie = movieRepository.save(Movie.builder()
-                .title(movieDto.getTitle())
-                .description(movieDto.getDescription())
-                .build());
-        CreateSessionDto sessionDto = CreateSessionDto.builder()
-                .localDateTime(LocalDateTime.now())
-                .movieId(realMovie.getId())
-                .price(BigDecimal.TEN)
-                .build();
-        List<TicketDto> tickets = sessionService.saveSession(sessionDto);
-        Integer sessionId = tickets.stream().findFirst().get().getSession().getId();
+        Integer sessionId = getSessionId();
         BookingDto bookingDto = new BookingDto(sessionId, expectedNumber);
 
         TicketResponse ticketResponse = given(requestSpecification)
@@ -145,16 +136,16 @@ public class CinemaControllerTest {
     @DisplayName("Покупка билета - ошибка: Сеанс не найден")
     public void buyTicketFailedNotFoundSession() {
         String placeTestNumber = "A1";
-        int testSessionId = 5;
 
-        BookingDto bookingDto = new BookingDto(testSessionId, placeTestNumber);
+
+        BookingDto bookingDto = new BookingDto(TEST_SESSION_ID, placeTestNumber);
 
         given(requestSpecification)
                 .body(bookingDto)
                 .post("/ticket/booking")
                 .then()
                 .spec(responseSpecification)
-                .statusCode(HttpStatus.BAD_REQUEST.value());
+                .statusCode(HttpStatus.NOT_FOUND.value());
 
     }
 
@@ -162,19 +153,7 @@ public class CinemaControllerTest {
     @DisplayName("Покупка билета - ошибка: несуществующее место")
     public void buyTicketFailedIncorrectPlace() {
         String testPlaceNumber = "A100";
-
-        MovieDto movieDto = createTestMovie();
-        Movie realMovie = movieRepository.save(Movie.builder()
-                .title(movieDto.getTitle())
-                .description(movieDto.getDescription())
-                .build());
-        CreateSessionDto sessionDto = CreateSessionDto.builder()
-                .localDateTime(LocalDateTime.now())
-                .movieId(realMovie.getId())
-                .price(BigDecimal.TEN)
-                .build();
-        List<TicketDto> tickets = sessionService.saveSession(sessionDto);
-        Integer sessionId = tickets.stream().findFirst().get().getSession().getId();
+        Integer sessionId = getSessionId();
         BookingDto bookingDto = new BookingDto(sessionId, testPlaceNumber);
 
         given(requestSpecification)
@@ -182,29 +161,16 @@ public class CinemaControllerTest {
                 .post("/ticket/booking")
                 .then()
                 .spec(responseSpecification)
-                .statusCode(HttpStatus.BAD_REQUEST.value());
+                .statusCode(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
     @DisplayName("Успешное получение всех свободных мест на сеанс")
     public void findEmptyPlaces() {
-        MovieDto movieDto = createTestMovie();
-        Movie realMovie = movieRepository.save(Movie.builder()
-                .title(movieDto.getTitle())
-                .description(movieDto.getDescription())
-                .build());
-        CreateSessionDto sessionDto = CreateSessionDto.builder()
-                .localDateTime(LocalDateTime.now())
-                .movieId(realMovie.getId())
-                .price(BigDecimal.TEN)
-                .build();
-        List<TicketDto> tickets = sessionService.saveSession(sessionDto);
-        Integer sessionId = tickets.stream().findFirst().get().getSession().getId();
-
+        Integer sessionId = getSessionId();
         String placeNumber = "A1";
         BookingDto bookingDto = new BookingDto(sessionId, placeNumber);
         ticketService.buyTicket(bookingDto);
-        int expectedSize = 9;
 
         List<String> emptyPlaceTickets = given(requestSpecification)
                 .pathParam("id", sessionId)
@@ -217,7 +183,23 @@ public class CinemaControllerTest {
                 .as(new TypeRef<>() {
                 });
 
-        Assertions.assertEquals(expectedSize, emptyPlaceTickets.size());
+        Assertions.assertEquals(EXPECTED_EMPTY_PLACES, emptyPlaceTickets.size());
+    }
+
+    @Test
+    @DisplayName("Покупка билета - ошибка: место занято")
+    public void buyTicketFailedOccupiedPlace() {
+        String testPlaceNumber = "A2";
+        Integer sessionId = getSessionId();
+        BookingDto bookingDto = new BookingDto(sessionId, testPlaceNumber);
+        ticketService.buyTicket(bookingDto);
+
+        given(requestSpecification)
+                .body(bookingDto)
+                .post("/ticket/booking")
+                .then()
+                .spec(responseSpecification)
+                .statusCode(HttpStatus.CONFLICT.value());
     }
 
     private MovieDto createTestMovie() {
@@ -240,7 +222,22 @@ public class CinemaControllerTest {
                 .build();
         Session session = sessionMapper.toEntity(sessionDto);
         session.setMovie(realMovie);
-        return sessionRepository.save(session);
+        return session;
+    }
+
+    private Integer getSessionId() {
+        MovieDto movieDto = createTestMovie();
+        Movie realMovie = movieRepository.save(Movie.builder()
+                .title(movieDto.getTitle())
+                .description(movieDto.getDescription())
+                .build());
+        CreateSessionDto sessionDto = CreateSessionDto.builder()
+                .localDateTime(LocalDateTime.now())
+                .movieId(realMovie.getId())
+                .price(BigDecimal.TEN)
+                .build();
+        List<TicketDto> tickets = sessionService.saveSession(sessionDto);
+        return tickets.stream().findFirst().get().getSession().getId();
     }
 
 }

@@ -1,9 +1,12 @@
-package com.javaacademy.cinema.controller;
+package com.javaacademy.cinema.controller.admin;
 
+import com.javaacademy.cinema.controller.Validator;
 import com.javaacademy.cinema.dto.CreateSessionDto;
 import com.javaacademy.cinema.dto.TicketDto;
 import com.javaacademy.cinema.service.SessionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,9 +36,14 @@ public class SessionController {
     @Operation(summary = "Создание сеанса",
         description = "Создание сеанса с его номером, временем, фильмом и ценой")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Успешное создание сеанса."),
-            @ApiResponse(responseCode = "400", description = "Фильм не существует."),
-            @ApiResponse(responseCode = "403", description = "Доступ запрещен.")
+            @ApiResponse(responseCode = "201", description = "Успешное создание сеанса.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TicketDto.class))),
+            @ApiResponse(responseCode = "404", description = "Фильм не существует.",
+                    content = @Content(mediaType = "plain/text")),
+            @ApiResponse(responseCode = "403", description = "Доступ запрещен.",
+                    content = @Content(mediaType = "plain/text"))
     })
     @CacheEvict(value = "sessions", allEntries = true)
     @PostMapping

@@ -88,7 +88,7 @@ public class MovieControllerTest {
                 .post()
                 .then()
                 .spec(responseSpecification)
-                .statusCode(HttpStatus.BAD_REQUEST.value());
+                .statusCode(HttpStatus.CONFLICT.value());
     }
 
     private MovieDto createTestMovie() {

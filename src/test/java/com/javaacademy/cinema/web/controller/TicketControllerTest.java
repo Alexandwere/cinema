@@ -51,6 +51,7 @@ public class TicketControllerTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    private static final int FAKE_SESSION_ID = -5;
     private static final String CLEAN_TABLES = "delete from session; delete from movie; delete from ticket";
     @BeforeEach()
     public void cleanUpData() {
@@ -90,17 +91,16 @@ public class TicketControllerTest {
     @Test
     @DisplayName("Получение купленных билетов - ошибка: Нет такого сеанса")
     public void findBuyTicketsFailed() {
-        int fakeSessionId = -5;
         Session session = createTestSession();
 
         given(requestSpecification)
                 .header("token", trueToken)
                 .header("password", truePassword)
-                .pathParam("id", fakeSessionId)
+                .pathParam("id", FAKE_SESSION_ID)
                 .get("/saled/{id}")
                 .then()
                 .spec(responseSpecification)
-                .statusCode(HttpStatus.BAD_REQUEST.value());
+                .statusCode(HttpStatus.NOT_FOUND.value());
     }
 
     private MovieDto createTestMovie() {
